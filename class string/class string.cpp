@@ -254,6 +254,7 @@ Snumber sum(const Snumber& a, const Snumber& b) {
     Sstring an = answ.reverse();
     return an;
 }
+
 int main()
 {
     Sstring a;

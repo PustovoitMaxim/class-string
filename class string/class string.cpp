@@ -84,6 +84,12 @@ public:
         }
         return temp;
     }
+    Sstring& trim() {
+        if (*data == '0')
+            data++;
+        size--;
+        return *this;
+    }
     Sstring& operator = (const Sstring& a) {
         if (this->data != a.data)
         {
@@ -112,7 +118,7 @@ public:
     };
     Sstring& operator +(char* st) {
         long st_size = Count_size(st);
-        char* tmp = new char[st_size  + size];
+        char* tmp = new char[st_size + size];
         char* start1 = data;
         char* start2 = st;
         while (*tmp++ = *start1++);
@@ -134,7 +140,7 @@ istream& operator >>(istream& is, Sstring& st) {
     char* m = allocate(100);
     int pointer = 0;
     if (s) while (is.good()) {
-        if (pointer == 100){
+        if (pointer == 100) {
             string string1 = string(st.data);
             string string2 = string(m);
             string answ = string1 + string2;
@@ -149,19 +155,22 @@ istream& operator >>(istream& is, Sstring& st) {
     m[pointer] = '\0';
     char* n = Copy(m);
     st.data = n;
-    delete [] m;
+    delete[] m;
     return is;
 }
 bool operator <(const Sstring& a, const Sstring& b) {
     return a.size < b.size;
 };
-bool operator >(const Sstring & a, const Sstring & b) {
-        return not operator<(a, b);
+bool operator >(const Sstring& a, const Sstring& b) {
+    return not operator<(a, b);
 };
 class Snumber : public Sstring {
+protected:
+    char sight;
 public:
     Snumber() {
         size = 0;
+        sight = 1;
         data = new char[1];
         data[0] = '\0';
         data_tail = data;
@@ -171,19 +180,38 @@ public:
         char* res = Copy(p);
         data_tail = res + size;
         data = res;
+        if (*data == '-') {
+            sight = -1;
+            data++;
+            size--;
+        }
+        else
+            sight = 1;
     };
-    Snumber (long p){
+    Snumber(long p) {
         size = p;
         data = allocate(p);
         data_tail = data + size;
+        sight = 0;
     };
-    Snumber (const Sstring& p){
-        pair <const char*,long>temp = get_data_for(p);
+    Snumber(const Sstring& p) {
+        pair <const char*, long>temp = get_data_for(p);
         data = Copy(temp.first);
         size = temp.second;
         data_tail = data + temp.second;
+        if (*data == '-') {
+            sight = -1;
+            data++;
+            size--;
+        }
+        else
+            sight = 1;
     }
-    friend Snumber sum(const Snumber& a, const Snumber& b);
+    Snumber& trim(Snumber& p) {
+        if (*p.data == '0')
+            p.data++;
+        return p;
+    }
     Snumber& operator = (const Snumber& a) {
         if (this->data != a.data)
         {
@@ -213,56 +241,71 @@ public:
         Snumber new_Str(tmp);
         return new_Str;
     };
+    Snumber& operator +(const Snumber& a) {
+        Snumber num1 = *this;
+        Snumber num2 = a;
+        if (num1.size < num2.size) {
+            Snumber tnum1 = num1;
+            Snumber temp = (num2.size);
+            while (*tnum1.data != '\0')
+                *temp.data++ = *tnum1.data++;
+            while (*temp.data != '\0')
+                *temp.data++ = '0';
+            temp.data = temp.data_tail - temp.size;
+            num1 = temp;
+        }
+        if (num1.size > num2.size) {
+            Snumber tnum2 = num2;
+            Snumber temp(num1.size);
+            while (*temp.data++ = *tnum2.data++ & *tnum2.data != '\0');
+            while (*temp.data != '\0')
+                *temp.data++ = '0';
+            temp.data = temp.data_tail - temp.size;
+            num2 = temp;
+        }
+        char temp = 0;
+        char sg1 = num1.sight;
+        char sg2 = num2.sight;
+        Snumber answ(max(num1.size, num2.size) + 1);
+        while (answ.data != answ.data_tail - 1) {
+            char dig1 = (*num1.data++ - '0') * num1.sight;
+            char dig2 = (*num2.data++ - '0') * num2.sight;
+            char sum_res = dig1 + dig2 + temp;
+            if (sum_res >= 0)
+                temp = sum_res / 10;
+            else {
+                if (*num1.data != '0' && *num2.data != '0' && *num2.data != '\0' && *num2.data != '\0') {
+                    sum_res = 10 + sum_res;
+                    temp = -1;
+                }
+                else {
+                    sum_res = abs(sum_res);
+
+                }
+            }
+            *answ.data++ = (char)(sum_res % 10 + '0');
+        }
+        *answ.data = temp + '0';
+        answ.data = answ.data - max(num1.size, num2.size);
+        Sstring an = answ.reverse();
+        an = an.trim();
+        Snumber ans = an;
+        return ans;
+    }
 };
-Snumber sum(const Snumber& a, const Snumber& b) {
-    Snumber num1 = a;
-    Snumber num2 = b;
-    if (num1.size < num2.size) {
-        Snumber tnum1 = num1;
-        Snumber temp = (num2.size);
-        while (*tnum1.data != '\0')
-            *temp.data++ = *tnum1.data++;
-        while (*temp.data != '\0')
-            *temp.data++ = '0';
-        temp.data = temp.data_tail - temp.size;
-        num1 = temp;
-        //Sstring t = num1.reverse();
-        //num1 = t;
-    }
-    if (num1.size > num2.size) {
-        Snumber tnum2 = num2;
-        Snumber temp(num1.size);
-        while (*temp.data++ = *tnum2.data++ && *tnum2.data != '\0');
-        while (*temp.data != '\0')
-            *temp.data++ = '0';
-        temp.data = temp.data_tail - temp.size;
-        num2 = temp;
-        //Sstring t = num2.reverse();
-        //num2 = t;
-    }
-    char temp = 0;
-    Snumber answ(max(num1.size, num2.size) + 1);
-    while (answ.data != answ.data_tail - 1) {
-        char dig1 = *num1.data++ - '0';
-        char dig2 = *num2.data++ - '0';
-        char sum_res = dig1 + dig2 + temp;
-        temp = sum_res / 10;
-        *answ.data++ = (char)(sum_res % 10 + '0');
-    }
-    *answ.data = temp + '0';
-    answ.data = answ.data - max(num1.size, num2.size);
-    Sstring an = answ.reverse();
-    return an;
-}
 int main()
 {
     Sstring a;
     Sstring b;
-    b = "1";
-    a = "1";
+    b = "123";
+    a = "122";
     Snumber num1 = a;
     Snumber num2 = b;
-    cout << num1 <<" " << num2 << endl;
-    Snumber c = sum(num1,num2);
-    cout << c;
+    while (true) {
+        Snumber c = num1 + num2;
+        cout << c << endl;
+        cin >> num1 >> num2;
+    }
+
+
 }

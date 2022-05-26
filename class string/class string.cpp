@@ -49,8 +49,8 @@ public:
     pair<char*, long> get_data_for(Sstring& s) {
         return pair<char*, long>(s.data, s.size);
     }
-    pair<const char*, long> get_data_for(const Sstring& s) const {
-        return pair<const char*, long>(s.data, s.size);
+    pair<const char*, long> get_data_for() const {
+        return pair<const char*, long>(data, size);
     }
     Sstring() {
         size = 0;
@@ -82,7 +82,7 @@ public:
         while (d >= data) {
             *t++ = *d--;
         }
-        return temp;
+        return *this;
     }
     Sstring& trim() {
         if (*data == '0')
@@ -195,7 +195,7 @@ public:
         sight = 0;
     };
     Snumber(const Sstring& p) {
-        pair <const char*, long>temp = get_data_for(p);
+        pair <const char*, long>temp = p.get_data_for();
         data = Copy(temp.first);
         size = temp.second;
         data_tail = data + temp.second;
@@ -212,6 +212,23 @@ public:
             p.data++;
         return p;
     }
+    bool operator < (Snumber& p) const {
+        Snumber num1 = *this;
+        Snumber num2 = p;
+        if (*num1.data == '-')
+            num1.data++;
+        if (*num2.data == '-')
+            num2.data++;
+        while (*num1.data != '\0' && *num2.data != '\0')
+            if (*num2.data < *num1.data)
+                return false;
+            else
+                return true;
+        if (*num1.data == '\0')
+            return true;
+        else
+            return false;
+    };
     Snumber& operator = (const Snumber& a) {
         if (this->data != a.data)
         {
@@ -222,7 +239,7 @@ public:
         return  *this;
     };
     Snumber& operator = (const Sstring& a) {
-        pair<const char*, long> dat = a.get_data_for(a);
+        pair<const char*, long> dat = a.get_data_for();
         if (data != dat.first)
         {
             data = Copy(dat.first);
@@ -241,7 +258,8 @@ public:
         Snumber new_Str(tmp);
         return new_Str;
     };
-    Snumber& operator +(const Snumber& a) {
+    friend ostream& operator<<(ostream& os, const Snumber& st);
+    Snumber operator +(const Snumber& a) {
         Snumber num1 = *this;
         Snumber num2 = a;
         if (num1.size < num2.size) {
@@ -257,7 +275,8 @@ public:
         if (num1.size > num2.size) {
             Snumber tnum2 = num2;
             Snumber temp(num1.size);
-            while (*temp.data++ = *tnum2.data++ & *tnum2.data != '\0');
+            while (*tnum2.data != '\0')
+                *temp.data++ = *tnum2.data++;
             while (*temp.data != '\0')
                 *temp.data++ = '0';
             temp.data = temp.data_tail - temp.size;
@@ -266,46 +285,49 @@ public:
         char temp = 0;
         char sg1 = num1.sight;
         char sg2 = num2.sight;
+        char an_s;
+        if (sg1 != sg2) {
+            if (num1 < num2) {
+                an_s = sg2;
+            }
+            else
+                an_s = sg1;
+        }
         Snumber answ(max(num1.size, num2.size) + 1);
-        while (answ.data != answ.data_tail - 1) {
+        while (answ.data != answ.data_tail - 1){
             char dig1 = (*num1.data++ - '0') * num1.sight;
             char dig2 = (*num2.data++ - '0') * num2.sight;
-            char sum_res = dig1 + dig2 + temp;
-            if (sum_res >= 0)
+            char sum_res = abs(max(dig1,dig2) + min(dig1,dig2) + temp);
                 temp = sum_res / 10;
-            else {
-                if (*num1.data != '0' && *num2.data != '0' && *num2.data != '\0' && *num2.data != '\0') {
-                    sum_res = 10 + sum_res;
-                    temp = -1;
-                }
-                else {
-                    sum_res = abs(sum_res);
-
-                }
-            }
-            *answ.data++ = (char)(sum_res % 10 + '0');
+            *answ.data++ = (char)(abs(sum_res) % 10 + '0');
         }
         *answ.data = temp + '0';
         answ.data = answ.data - max(num1.size, num2.size);
         Sstring an = answ.reverse();
         an = an.trim();
         Snumber ans = an;
+        ans.sight = an_s;
         return ans;
     }
+};
+ostream& operator <<(ostream& os, const Snumber& st) {
+    if (st.sight == -1)
+        os << '-';
+        os << st.data;
+    return os;
 };
 int main()
 {
     Sstring a;
     Sstring b;
-    b = "123";
-    a = "122";
+    a = "-999";
+    b = "1";
     Snumber num1 = a;
     Snumber num2 = b;
+    cout << num1 <<" "<< num2;
     while (true) {
         Snumber c = num1 + num2;
         cout << c << endl;
         cin >> num1 >> num2;
     }
-
-
 }

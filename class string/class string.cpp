@@ -266,10 +266,11 @@ public:
         if (num1.size < num2.size) {
             Snumber tnum1 = num1;
             Snumber temp = (num2.size);
+            for (int i = 0; i < num2.size - tnum1.size; i++) {
+                *temp.data++ = '0';
+            }
             while (*tnum1.data != '\0')
                 *temp.data++ = *tnum1.data++;
-            while (*temp.data != '\0')
-                *temp.data++ = '0';
             temp.data = temp.data_tail - temp.size;
             num1 = temp;
         }
@@ -329,8 +330,8 @@ int main()
 {
     Sstring a;
     Sstring b;
-    a = "998";
-    b = "1";
+    a = "5";
+    b = "16";
     Snumber num1 = a;
     Snumber num2 = b;
     while (true) {

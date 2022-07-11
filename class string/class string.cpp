@@ -74,7 +74,7 @@ public:
         data_tail = a.data_tail;
         size = a.size;
     };
-    Sstring& reverse() {
+    Sstring reverse() {
         Sstring temp(size);
         const char* d = data_tail;
         d--;
@@ -82,12 +82,13 @@ public:
         while (d >= data) {
             *t++ = *d--;
         }
-        return *this;
+        return temp;
     }
     Sstring& trim() {
-        if (*data == '0')
+        while (*data == '0') {
             data++;
-        size--;
+            size--;
+        }
         return *this;
     }
     Sstring& operator = (const Sstring& a) {
@@ -275,10 +276,11 @@ public:
         if (num1.size > num2.size) {
             Snumber tnum2 = num2;
             Snumber temp(num1.size);
+            for (int i = 0; i < num1.size - tnum2.size; i++) {
+                *temp.data++ = '0';
+            }
             while (*tnum2.data != '\0')
                 *temp.data++ = *tnum2.data++;
-            while (*temp.data != '\0')
-                *temp.data++ = '0';
             temp.data = temp.data_tail - temp.size;
             num2 = temp;
         }
@@ -293,13 +295,20 @@ public:
             else
                 an_s = sg1;
         }
+        else
+            an_s = sg1;
+        num1 = num1.reverse();
+        num2 = num2.reverse();
         Snumber answ(max(num1.size, num2.size) + 1);
         while (answ.data != answ.data_tail - 1){
             char dig1 = (*num1.data++ - '0') * num1.sight;
             char dig2 = (*num2.data++ - '0') * num2.sight;
-            char sum_res = abs(max(dig1,dig2) + min(dig1,dig2) + temp);
-                temp = sum_res / 10;
-            *answ.data++ = (char)(abs(sum_res) % 10 + '0');
+            char sum_res = abs(max(dig1,dig2) + min(dig1,dig2) + temp*an_s);
+            temp = sum_res / 10;
+            if (sum_res < 0) {
+                sum_res = 10 - sum_res;
+            }
+            *answ.data++ = (char)(sum_res % 10 + '0');
         }
         *answ.data = temp + '0';
         answ.data = answ.data - max(num1.size, num2.size);
@@ -320,11 +329,10 @@ int main()
 {
     Sstring a;
     Sstring b;
-    a = "-999";
+    a = "998";
     b = "1";
     Snumber num1 = a;
     Snumber num2 = b;
-    cout << num1 <<" "<< num2;
     while (true) {
         Snumber c = num1 + num2;
         cout << c << endl;

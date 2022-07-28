@@ -300,19 +300,27 @@ public:
             an_s = sg1;
         num1 = num1.reverse();
         num2 = num2.reverse();
-        Snumber answ(max(num1.size, num2.size) + 1);
+        Snumber answ(max(num1.size, num2.size) + 1 + 1);
+        //разбить на 2 оператора + и - и прописать случаи: + + +, ++-,+-+,+--,-++,-+-,-+-,--+,---
         while (answ.data != answ.data_tail - 1){
             char dig1 = (*num1.data++ - '0') * num1.sight;
             char dig2 = (*num2.data++ - '0') * num2.sight;
-            char sum_res = abs(max(dig1,dig2) + min(dig1,dig2) + temp*an_s);
+            char sum_res;
+            if (dig1 == '0' && dig2 == '0')
+                sum_res = temp;
+            else
+                sum_res = max(dig1, dig2) + min(dig1, dig2) + temp * an_s;
             temp = sum_res / 10;
-            if (sum_res < 0) {
-                sum_res = 10 - sum_res;
+            if (sum_res < 0 && (sg1 != sg2)) {
+                temp = -1;
+                sum_res = 10 + sum_res;
             }
-            *answ.data++ = (char)(sum_res % 10 + '0');
+            else
+                sum_res %= 10;
+            *answ.data++ = (char)(abs(sum_res) % 10 + '0');
         }
         *answ.data = temp + '0';
-        answ.data = answ.data - max(num1.size, num2.size);
+        answ.data = answ.data - max(num1.size, num2.size)-1;
         Sstring an = answ.reverse();
         an = an.trim();
         Snumber ans = an;
@@ -330,8 +338,8 @@ int main()
 {
     Sstring a;
     Sstring b;
-    a = "5";
-    b = "16";
+    a = "3";
+    b = "9";
     Snumber num1 = a;
     Snumber num2 = b;
     while (true) {

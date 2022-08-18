@@ -159,12 +159,14 @@ istream& operator >>(istream& is, Sstring& st) {
     delete[] m;
     return is;
 }
+/*
 bool operator <(const Sstring& a, const Sstring& b) {
     return a.size < b.size;
 };
 bool operator >(const Sstring& a, const Sstring& b) {
     return not operator<(a, b);
-};
+
+};*/
 class Snumber : public Sstring {
 protected:
     char sight;
@@ -289,20 +291,51 @@ public:
         char sg1 = num1.sight;
         char sg2 = num2.sight;
         char an_s;
-        if (sg1 != sg2) {
-            if (num1 < num2) {
-                an_s = sg2;
-            }
-            else
-                an_s = sg1;
-        }
-        else
-            an_s = sg1;
-        num1 = num1.reverse();
-        num2 = num2.reverse();
         Snumber answ(max(num1.size, num2.size) + 1 + 1);
-        //разбить на 2 оператора + и - и прописать случаи: + + +, ++-,+-+,+--,-++,-+-,-+-,--+,---
-        while (answ.data != answ.data_tail - 1){
+        if ((sg1 == 1 && sg2 == 1) || (sg1 == -1 && sg2 == -1)) {
+            if (sg1 == 1)
+                an_s = 1;
+            else
+                an_s = -1;
+            char len = 1;
+            num1 = num1.reverse();
+            num2 = num2.reverse();
+            while (answ.data != answ.data_tail - 1) {
+                char dig1 = (*num1.data++ - '0');
+                char dig2 = (*num2.data++ - '0');
+                char sum_res = dig1 + dig2 + temp;
+                if (len > num1.size || len > num2.size)
+                    sum_res = temp;
+                temp = abs(sum_res) / 10;
+                *answ.data++ = (char)(abs(sum_res) % 10 + '0');
+                len++;
+            }
+        }
+        if ((sg1 == -1 && sg2 == 1)|| (sg1 == 1 && sg2 == -1)){
+            if (sg1 == -1 && sg2 == 1)
+                an_s = num2 < num1 ? -1 : 1;
+            if (sg1 == 1 && sg2 == -1)
+                an_s = num1 < num2 ? -1 : 1;
+            num1 = num1.reverse();
+            num2 = num2.reverse();
+            while (answ.data != answ.data_tail - 1) {
+                char dig1 = (*num1.data++ - '0') * num1.sight;
+                char dig2 = (*num2.data++ - '0') * num2.sight;
+                char sum_res = max(dig1, dig2) + min(dig1, dig2) + temp * an_s;
+                if (abs(dig1) > 9 or abs(dig2) > 9) { sum_res = 0; temp = 0; }
+                if (an_s == 1 and sum_res < 0) {
+                    temp = -1;
+                    sum_res = 10 + sum_res;
+                }
+                if (an_s == -1 and sum_res > 0) {
+                    temp = -1;
+                    sum_res = 10 - sum_res;
+                }
+                *answ.data++ = (char)(abs(sum_res) % 10 + '0');
+            }
+        }
+        //разбить на 2 оператора + и - и прописать случаи: + + +, ++-,+-+,+--,-++,-+-,--+,---
+       /* while (answ.data != answ.data_tail - 1){
             char dig1 = (*num1.data++ - '0') * num1.sight;
             char dig2 = (*num2.data++ - '0') * num2.sight;
             char sum_res;
@@ -318,7 +351,7 @@ public:
             else
                 sum_res %= 10;
             *answ.data++ = (char)(abs(sum_res) % 10 + '0');
-        }
+        }*/
         *answ.data = temp + '0';
         answ.data = answ.data - max(num1.size, num2.size)-1;
         Sstring an = answ.reverse();
@@ -326,6 +359,9 @@ public:
         Snumber ans = an;
         ans.sight = an_s;
         return ans;
+    }
+    Snumber operator *(const Snumber& a) {
+
     }
 };
 ostream& operator <<(ostream& os, const Snumber& st) {
@@ -338,7 +374,7 @@ int main()
 {
     Sstring a;
     Sstring b;
-    a = "3";
+    a = "15";
     b = "9";
     Snumber num1 = a;
     Snumber num2 = b;
